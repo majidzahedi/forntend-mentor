@@ -25,10 +25,7 @@ export default function ChallengeCard(props: ChallengeCardProps) {
           <img src={imgSrc} className="rounded-t-lg" />
         </CardHeader>
         <CardContent className="flex flex-col space-y-4">
-          <CardTitle className="font-bold text-2xl">
-            {/* <Link href={url}>{title}</Link> */}
-            {title}
-          </CardTitle>
+          <CardTitle className="font-bold text-2xl">{title}</CardTitle>
           <CardDescription className="text-base">{description}</CardDescription>
         </CardContent>
       </Card>

@@ -47,6 +47,11 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // challenges colors.
+        "newsletter-Tomato": "hsl(4, 100%, 67%)",
+        "newsletter-DarkSlateGrey": "hsl(234, 29%, 20%)",
+        "newsletter-CharcoalGrey": "hsl(235, 18%, 26%)",
+        "newsletter-Grey": "hsl(231, 7%, 60%)",
       },
       borderRadius: {
         lg: `var(--radius)`,
@@ -72,5 +77,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/forms")],
 }
