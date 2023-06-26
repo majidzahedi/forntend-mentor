@@ -1,105 +1,200 @@
-import React from "react"
-import { Metadata } from "next"
+"use client"
 
-import { siteConfig } from "@/config/site"
-import { Button } from "@/components/ui/button"
+import React, { useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/lablel"
+
+import Checkbox from "./components/Checkbox"
+
+const items = [
+  {
+    id: "Product discovery and building what matters",
+    label: "Product discovery and building what matters",
+  },
+  {
+    id: "Measuring to ensure updates are a success",
+    label: "Measuring to ensure updates are a success",
+  },
+  {
+    id: "And much more!",
+    label: "And much more!",
+  },
+] as const
+
+const formSchema = z.object({
+  email: z.string().email().max(50),
+  items: z.array(z.string()).refine((value) => value.some((item) => item), {
+    message: "You should select at least one!",
+  }),
+})
 
 const page = () => {
-  const labels = [
-    "Product discovery and building what matters",
-    "Measuring to ensure updates are a success",
-    "And much more!",
-  ]
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      items: [],
+    },
+  })
+
+  const [iSdialogOpen, setIsDialogOpen] = useState(false)
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values)
+    setIsDialogOpen(true)
+  }
+
   return (
-    <Card className="bg-white w-full rounded-[32px] p-4 sm:max-w-[51rem] grid grid-cols-2 gap-3 ">
-      <CardHeader className="p-9 pt-16">
-        <CardTitle className="text-[50px] ">Stay updated!</CardTitle>
-        <CardDescription className="flex flex-col space-y-6 pt-2  text-newsletter-DarkSlateGrey">
-          <p className="">
-            Join 60,000+ product managers receiving monthly updates on:
-          </p>
+    <>
+      <AlertDialog open={iSdialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              account and remove your data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={(e) => setIsDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={(e) => setIsDialogOpen(false)}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-          <div className="flex flex-col space-y-3 text-newsletter-DarkSlateGrey">
-            {labels.map((label, index) => (
-              <CheckboxDemo label={label} key={index} id={index.toString()} />
-            ))}
-          </div>
+      <Card className="bg-white p-0  h-screen sm:h-fit rounded-none w-full sm:rounded-[32px] sm:p-4 max-w-full sm:max-w-[51rem] grid grid-rows-2  sm:grid-cols-2 sm:grid-rows-none sm:gap-3 ">
+        <CardHeader className="sm:p-9 sm:pt-16">
+          <CardTitle className="text-[50px] ">Stay updated!</CardTitle>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="flex flex-col space-y-6 pt-2  text-newsletter-DarkSlateGrey"
+            >
+              <p className="">
+                Join 60,000+ product managers receiving monthly updates on:
+              </p>
+              <FormField
+                control={form.control}
+                name="items"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col space-y-3 text-newsletter-DarkSlateGrey">
+                    {items.map((item, index) => (
+                      <FormField
+                        key={item.id}
+                        control={form.control}
+                        name="items"
+                        render={({ field }) => {
+                          return (
+                            <FormItem key={item.id}>
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(item.id)}
+                                  label={item.label}
+                                  id={item.id}
+                                  onCheckedChange={(checked: boolean) => {
+                                    return checked
+                                      ? field.onChange([
+                                          ...field.value,
+                                          item.id,
+                                        ])
+                                      : field.onChange(
+                                          field.value?.filter(
+                                            (value) => value !== item.id
+                                          )
+                                        )
+                                  }}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )
+                        }}
+                      />
+                    ))}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              ></FormField>
 
-          <div className="grid w-full max-w-sm items-center gap-1.5 pt-4">
-            <Label htmlFor="email" className="font-bold text-xs">
-              Email Address
-            </Label>
-            <Input
-              type="email"
-              id="email"
-              placeholder="email@company.com"
-              className="rounded-lg p-6 w-full"
-            />
-          </div>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem
+                    className="
+grid w-full max-w-sm items-center gap-1.5 pt-4"
+                  >
+                    <FormLabel htmlFor="email" className="font-bold text-xs">
+                      Email Address
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        // type="email"
+                        // id="email"
+                        placeholder="email@company.com"
+                        // className="rounded-lg p-6 w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-          <button className="py-4 rounded-lg font-bold text-sm bg-newsletter-DarkSlateGrey text-white hover:bg-gradient-to-r hover:to-newsletter-Tomato hover:from-pink-600 transition-colors duration-150">
-            Subscribe to monthly newsletter
-          </button>
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-1">
-        <img
-          className="h-full w-full"
-          src="newsletter/assets/images/illustration-sign-up-desktop.svg"
-        />
-      </CardContent>
-    </Card>
+              <button className="py-4 rounded-lg font-bold text-sm bg-newsletter-DarkSlateGrey text-white hover:bg-gradient-to-r hover:to-newsletter-Tomato hover:from-pink-600 transition-colors duration-150">
+                Subscribe to monthly newsletter
+              </button>
+            </form>
+            {/* <CardDescription className="flex flex-col space-y-6 pt-2  text-newsletter-DarkSlateGrey"> */}
+            {/* </CardDescription> */}
+          </Form>
+        </CardHeader>
+        <CardContent className="p-0 sm:p-1 -order-1 sm:order-1">
+          <img
+            className="h-full w-full hidden sm:block"
+            src="newsletter/assets/images/illustration-sign-up-desktop.svg"
+          />
+
+          <img
+            className="h-full w-[100%] origin-top sm:hidden p-0"
+            src="newsletter/assets/images/illustration-sign-up-mobile.svg"
+          />
+        </CardContent>
+      </Card>
+    </>
   )
 }
 
-interface CheckboxProp {
-  id: string
-  label: string
-}
-
-function CheckboxDemo(prop: CheckboxProp) {
-  const { id, label } = prop
-  return (
-    <div className="flex items-center space-x-2">
-      <input
-        type="checkbox"
-        className="rounded-full w-5 h-5 checked:bg-newsletter-Tomato hover:ring-newsletter-Tomato focus:ring-newsletter-Tomato checked:focus:bg-newsletter-Tomato hover:bg-newsletter-Tomato checked:hover:bg-newsletter-Tomato"
-        id={id}
-      />
-      <Label
-        htmlFor={id}
-        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
-        {label}
-      </Label>
-    </div>
-  )
+function name(param: Array<string>): void {
+  console.log(param)
 }
 
 export default page
-
-// Stay updated!
-
-// Join 60,000+ product managers receiving monthly updates on:
-
-// Product discovery and building what matters
-// Measuring to ensure updates are a success
-// And much more!
-
-// Email address
-// email@company.com
-
-// Subscribe to monthly newsletter
 
 // Thanks for subscribing!
 
